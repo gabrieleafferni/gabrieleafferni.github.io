@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gabriele Afferni — Data Science &amp; Statistical Modelling</title>
+<meta name="description" content="Personal portfolio of Gabriele Afferni: statistical modelling, time-series forecasting and applied machine learning in Python and R." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;450;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#FAFAF7;
+    --ink:#14181F;
+    --muted:#5C6573;
+    --line:#E7E5DE;
+    --signal:#2348C9;        /* the forecast line — the "signal" */
+    --signal-soft:#2348C914;
+    --regime-calm:#EDE7D6;   /* HMM regime band A */
+    --regime-vol:#E1E7F2;    /* HMM regime band B */
+    --card:#FFFFFF;
+    --display:'Space Grotesk',system-ui,sans-serif;
+    --body:'Inter',system-ui,sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);color:var(--ink);font-family:var(--body);
+    font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:980px;margin:0 auto;padding:0 28px}
+  a{color:inherit}
+  .eyebrow{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--muted);
+  }
+
+  /* ---------- Hero ---------- */
+  header{padding:64px 0 28px}
+  .topbar{display:flex;justify-content:space-between;align-items:center;
+    font-family:var(--mono);font-size:.78rem;color:var(--muted);margin-bottom:54px}
+  .topbar .loc::before{content:"◦ ";color:var(--signal)}
+  h1{
+    font-family:var(--display);font-weight:600;line-height:1.02;
+    font-size:clamp(2.5rem,7vw,4.6rem);letter-spacing:-.02em;margin-bottom:18px;
+  }
+  .lede{font-size:clamp(1.05rem,2.4vw,1.3rem);color:var(--ink);max-width:36ch;font-weight:450}
+  .lede b{color:var(--signal);font-weight:600}
+
+  /* ---------- Signature: regime / forecast chart ---------- */
+  .chart{margin:40px 0 8px;border:1px solid var(--line);border-radius:14px;
+    background:var(--card);padding:18px 18px 12px;overflow:hidden}
+  .chart-cap{display:flex;justify-content:space-between;align-items:baseline;
+    font-family:var(--mono);font-size:.7rem;color:var(--muted);margin-top:6px}
+  .chart-cap .a{color:#B59B5E}.chart-cap .b{color:var(--signal)}
+  svg .hist{fill:none;stroke:var(--signal);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+  svg .fcast{fill:none;stroke:var(--signal);stroke-width:2.2;stroke-dasharray:5 6;opacity:.85}
+  svg .cone{fill:var(--signal);opacity:.07}
+  svg .split{stroke:#C7C3B8;stroke-width:1;stroke-dasharray:2 4}
+  @media (prefers-reduced-motion:no-preference){
+    .hist{stroke-dasharray:1400;stroke-dashoffset:1400;animation:draw 2s ease-out .25s forwards}
+    .fcast{opacity:0;animation:fade 1s ease-out 2.1s forwards}
+    .cone{opacity:0;animation:cone 1s ease-out 2.1s forwards}
+    @keyframes draw{to{stroke-dashoffset:0}}
+    @keyframes fade{to{opacity:.85}}
+    @keyframes cone{to{opacity:.07}}
+  }
+
+  /* ---------- Buttons ---------- */
+  .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+  .btn{
+    font-family:var(--mono);font-size:.82rem;text-decoration:none;
+    padding:11px 18px;border-radius:9px;border:1px solid var(--ink);
+    transition:transform .12s ease,background .15s ease,color .15s ease;
+  }
+  .btn:hover{transform:translateY(-2px)}
+  .btn.solid{background:var(--ink);color:var(--bg)}
+  .btn.solid:hover{background:var(--signal);border-color:var(--signal)}
+  .btn.ghost:hover{background:var(--ink);color:var(--bg)}
+  .btn:focus-visible{outline:3px solid var(--signal);outline-offset:3px}
+
+  /* ---------- Sections ---------- */
+  section{padding:54px 0;border-top:1px solid var(--line)}
+  .sec-head{margin-bottom:30px}
+  .sec-head h2{font-family:var(--display);font-weight:600;font-size:1.5rem;
+    letter-spacing:-.01em;margin-top:8px}
+
+  .about p{max-width:62ch;color:var(--ink)}
+  .about p + p{margin-top:14px;color:var(--muted)}
+
+  /* ---------- Projects ---------- */
+  .proj{display:grid;gap:18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:24px 24px 20px;transition:border-color .15s ease,transform .15s ease}
+  .card:hover{border-color:var(--signal);transform:translateY(-2px)}
+  .card .num{font-family:var(--mono);font-size:.72rem;color:var(--signal)}
+  .card h3{font-family:var(--display);font-weight:600;font-size:1.18rem;margin:6px 0 4px}
+  .card .role{font-family:var(--mono);font-size:.72rem;color:var(--muted);margin-bottom:10px}
+  .card p{color:var(--ink);font-size:.96rem;max-width:64ch}
+  .tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+  .tag{font-family:var(--mono);font-size:.68rem;color:var(--muted);
+    border:1px solid var(--line);border-radius:20px;padding:3px 10px}
+  .wip{color:#B59B5E;border-color:#E4D6B4}
+
+  /* ---------- Toolbox ---------- */
+  .tool{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+  .tool .grp h4{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--signal);margin-bottom:8px}
+  .tool .grp p{color:var(--ink);font-size:.94rem}
+
+  /* ---------- Footer ---------- */
+  footer{border-top:1px solid var(--line);padding:40px 0 64px}
+  .foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:18px;align-items:baseline}
+  .foot a{font-family:var(--mono);font-size:.82rem;text-decoration:none;color:var(--ink);
+    border-bottom:1px solid transparent;transition:border-color .15s ease}
+  .foot a:hover{border-color:var(--signal)}
+  .foot .copy{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+
+  @media(max-width:640px){
+    .tool{grid-template-columns:1fr}
+    .topbar{margin-bottom:38px}
+    header{padding:42px 0 20px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="topbar">
+      <span>Gabriele&nbsp;Afferni</span>
+      <span class="loc">Turin, Italy · open to work</span>
+    </div>
+    <p class="eyebrow">Data Science · Statistics · Machine Learning</p>
+    <h1>I build models that<br>turn noisy data<br>into decisions.</h1>
+    <p class="lede">MSc in Statistical &amp; Economic Methods for Decision-Making. I work end-to-end — from raw data to <b>validated, probabilistic forecasts</b>.</p>
+
+    <!-- Signature: a forecast crossing market regimes, the world of my thesis -->
+    <div class="chart" aria-hidden="true">
+      <svg viewBox="0 0 760 230" role="img" preserveAspectRatio="none" style="width:100%;height:auto;display:block">
+        <!-- HMM regime bands -->
+        <rect x="0"   y="0" width="180" height="230" fill="var(--regime-calm)"/>
+        <rect x="180" y="0" width="150" height="230" fill="var(--regime-vol)"/>
+        <rect x="330" y="0" width="150" height="230" fill="var(--regime-calm)"/>
+        <rect x="480" y="0" width="280" height="230" fill="var(--regime-vol)" opacity=".5"/>
+        <!-- forecast uncertainty cone -->
+        <polygon class="cone" points="480,150 560,118 650,100 760,82 760,196 650,182 560,176 480,150"/>
+        <!-- history -->
+        <path class="hist" d="M0,150 L30,138 L55,158 L80,128 L110,140 L140,108 L165,124 L195,90 L220,118 L250,86 L280,124 L310,100 L340,146 L370,128 L400,166 L430,142 L460,180 L480,150"/>
+        <!-- regime / forecast split -->
+        <line class="split" x1="480" y1="10" x2="480" y2="220"/>
+        <!-- forecast -->
+        <path class="fcast" d="M480,150 L520,134 L560,146 L600,120 L650,132 L700,108 L760,120"/>
+      </svg>
+      <div class="chart-cap">
+        <span><span class="a">▮</span> latent market regimes (HMM)</span>
+        <span><span class="b">━</span> history &nbsp; <span class="b">┄</span> probabilistic forecast (LSTM)</span>
+      </div>
+    </div>
+
+    <div class="cta">
+      <a class="btn solid" href="https://github.com/gabrieleafferni">GitHub</a>
+      <a class="btn ghost" href="https://www.linkedin.com/in/gabriele-afferni">LinkedIn</a>
+      <a class="btn ghost" href="mailto:gabri.afferni090@gmail.com">Email</a>
+    </div>
+  </header>
+
+  <section class="about">
+    <div class="sec-head"><p class="eyebrow">About</p><h2>What I work on</h2></div>
+    <p>I'm a statistician and aspiring data scientist with a strong quantitative foundation and hands-on experience building statistical and machine-learning models on real data — with a particular interest in economic and financial time series. I'm comfortable across the whole analytical workflow: data preparation and cleaning, modelling, validation, and turning results into something interpretable.</p>
+    <p>I'm currently looking for a first role in data science, data analysis, business analysis or applied AI/ML, based in Turin or remote. Alongside modelling, I work fluently with generative-AI tools and have started building small AI agents and data-automation pipelines of my own.</p>
+  </section>
+
+  <section>
+    <div class="sec-head"><p class="eyebrow">Selected work</p><h2>Projects</h2></div>
+    <div class="proj">
+
+      <article class="card">
+        <span class="num">01</span>
+        <h3>HMM–LSTM hybrid for probabilistic forecasting</h3>
+        <p class="role">MSc thesis · paper in preparation</p>
+        <p>A hybrid model combining Hidden Markov Models (to capture latent market regimes) with LSTM networks, for probabilistic forecasting of S&amp;P 500 returns over 1/3/6-month horizons. Full Python pipeline: data preparation, walk-forward validation, multi-seed ensembling, and a battery of formal statistical tests. It systematically beats the reference statistical benchmarks.</p>
+        <div class="tags"><span class="tag">Python</span><span class="tag">TensorFlow / Keras</span><span class="tag">HMM</span><span class="tag">LSTM</span><span class="tag">Walk-forward validation</span><span class="tag">Time series</span></div>
+      </article>
+
+      <article class="card">
+        <span class="num">02</span>
+        <h3>Machine learning for Alzheimer's diagnosis</h3>
+        <p class="role">Applied ML project</p>
+        <p>A comparative study on clinical data, benchmarking Random Forests, gradient boosting, BART, Bayesian networks (DAGs) and neural networks against each other on predictive performance, with careful evaluation of the trade-offs between models.</p>
+        <div class="tags"><span class="tag">Python</span><span class="tag">scikit-learn</span><span class="tag">Bayesian networks</span><span class="tag">Model comparison</span></div>
+      </article>
+
+      <article class="card">
+        <span class="num">03</span>
+        <h3>Determinants of Italian household wellbeing</h3>
+        <p class="role">Statistical modelling · ISTAT microdata</p>
+        <p>An ordinal multinomial logit model in R on ISTAT survey microdata, identifying the socio-economic factors that drive self-reported household wellbeing — from data wrangling to interpretation of marginal effects.</p>
+        <div class="tags"><span class="tag">R</span><span class="tag">Ordinal logit</span><span class="tag">Econometrics</span><span class="tag">Survey data</span></div>
+      </article>
+
+      <article class="card">
+        <span class="num">04</span>
+        <h3>Automated job-search pipeline</h3>
+        <p class="role">Personal tool · in development</p>
+        <p>An end-to-end pipeline that aggregates job postings through official job-board APIs, then ranks each posting against my CV using multilingual sentence embeddings and an LLM scoring layer, writing the results to a tracked spreadsheet. A practical exercise in data engineering, NLP and applied generative AI.</p>
+        <div class="tags"><span class="tag">Python</span><span class="tag">NLP / embeddings</span><span class="tag">LLM scoring</span><span class="tag">APIs</span><span class="tag wip">In progress</span></div>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><p class="eyebrow">Toolbox</p><h2>Skills</h2></div>
+    <div class="tool">
+      <div class="grp"><h4>Languages</h4><p>Python (pandas, NumPy, scikit-learn, TensorFlow/Keras), R, SQL &amp; T-SQL, STATA</p></div>
+      <div class="grp"><h4>Machine learning &amp; AI</h4><p>Trees, boosting &amp; BART, neural networks (LSTM), Hidden Markov Models, Bayesian networks, generative-AI tools &amp; agent building</p></div>
+      <div class="grp"><h4>Statistics &amp; econometrics</h4><p>Time-series analysis, multivariate methods, ordinal logit/probit, Monte Carlo simulation, survey sampling</p></div>
+      <div class="grp"><h4>BI &amp; data</h4><p>Power BI (DAX), advanced Excel, SQL Server, Git/GitHub, business analysis</p></div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap foot">
+    <span class="copy">Gabriele Afferni · Turin, Italy</span>
+    <span>
+      <a href="https://github.com/gabrieleafferni">GitHub</a> &nbsp;·&nbsp;
+      <a href="https://www.linkedin.com/in/gabriele-afferni">LinkedIn</a> &nbsp;·&nbsp;
+      <a href="mailto:gabri.afferni090@gmail.com">Email</a>
+    </span>
+  </div>
+</footer>
+
+</body>
+</html>
